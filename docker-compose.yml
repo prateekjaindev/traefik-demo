@@ -139,6 +139,7 @@ services:
     container_name: backend1
     build: ./backend1
     deploy:
+      replicas: 2
       resources:
         limits:
           cpus: '0.50'

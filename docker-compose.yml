@@ -39,7 +39,7 @@ services:
           memory: 512M
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.dashboard.rule=Host(`traefik.local.com`)"
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.prateekjain.dev`)"
       - "traefik.http.routers.dashboard.service=api@internal"
       - "traefik.http.routers.dashboard.entrypoints=web"
       - "traefik.http.routers.metrics.rule=Host(`traefik.local.com`) && Path(`/metrics`)"
@@ -64,7 +64,7 @@ services:
           memory: 512M
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.prometheus.rule=Host(`prometheus.local.com`)"
+      - "traefik.http.routers.prometheus.rule=Host(`prometheus.prateekjain.dev`)"
       - "traefik.http.routers.prometheus.entrypoints=web"
 
   app-frontend:

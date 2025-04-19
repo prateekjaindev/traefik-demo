@@ -134,18 +134,12 @@ services:
   backend1:
     build: ./backend1
     deploy:
-      replicas: 2
       resources:
         limits:
           cpus: '0.50'
           memory: 512M
     networks:
       - app-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend1.rule=Host(`api.prateekjain.dev`) && PathPrefix(`/backend1`)"
@@ -164,11 +158,6 @@ services:
         limits:
           cpus: '0.50'
           memory: 512M
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend2.rule=Host(`api.prateekjain.dev`) && PathPrefix(`/backend2`)"

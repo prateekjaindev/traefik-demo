@@ -136,7 +136,6 @@ services:
       - "traefik.http.services.admin-frontend.loadbalancer.server.port=80" # Nginx default port
 
   backend1:
-    container_name: backend1
     build: ./backend1
     deploy:
       replicas: 2

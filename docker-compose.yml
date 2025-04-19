@@ -42,7 +42,7 @@ services:
       - "traefik.http.routers.dashboard.rule=Host(`traefik.prateekjain.dev`)"
       - "traefik.http.routers.dashboard.service=api@internal"
       - "traefik.http.routers.dashboard.entrypoints=web"
-      - "traefik.http.routers.metrics.rule=Host(`traefik.local.com`) && Path(`/metrics`)"
+      - "traefik.http.routers.metrics.rule=Host(`traefik.prateekjain.dev`) && Path(`/metrics`)"
       - "traefik.http.routers.metrics.service=api@internal"
       - "traefik.http.routers.metrics.entrypoints=web"
 

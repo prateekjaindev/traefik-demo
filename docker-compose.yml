@@ -1,4 +1,4 @@
-version: '3.8'
+print(default_api.write_file(path="docker-compose.yml", content='''version: '3.8'
 
 networks:
   app-network:
@@ -9,42 +9,67 @@ networks:
 volumes:
   prometheus_data:
     driver: local
+  letsencrypt: # Volume to store Let's Encrypt certificates
 
 services:
   traefik:
     image: traefik:v3.3.5
     command:
-      - "--api.insecure=${TRAEFIK_API_INSECURE:-false}"
+      # Base config
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
+      - "--api.dashboard=true"
+      # Entrypoints
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
-      - "--api.dashboard=true"
+      # Logging
+      - "--log.level=INFO" # Optional: Set log level
+      - "--accesslog=true" # Enable access logs
+      # Let's Encrypt configuration
+      - "--certificatesresolvers.myresolver.acme.email=hello@prateekjain.dev"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web" # Use HTTP challenge on port 80
+      # Prometheus Metrics
       - "--metrics.prometheus=true"
+      - "--metrics.prometheus.entryPoint=metrics" # Expose metrics on a dedicated entrypoint if needed (optional)
     ports:
-      - "80:80"
-      - "8080:8080"
-      - "443:443"
+      - "80:80"   # HTTP
+      - "443:443" # HTTPS
+      - "8080:8080" # Traefik Dashboard (optional, for direct access if API insecure is true)
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - letsencrypt:/letsencrypt # Mount the volume for certificates
     networks:
       - app-network
       - monitoring-network
-    environment:
-      - TRAEFIK_API_INSECURE=false
     deploy:
       resources:
         limits:
           cpus: '0.50'
           memory: 512M
     labels:
+      # Enable Traefik for itself (dashboard)
       - "traefik.enable=true"
+      # --- HTTP to HTTPS Redirect ---
+      # 1. Define the middleware
+      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+      # 2. Create a router that captures all HTTP traffic
+      - "traefik.http.routers.http-catchall.rule=hostregexp(`{host:.+}`)"
+      - "traefik.http.routers.http-catchall.entrypoints=web"
+      - "traefik.http.routers.http-catchall.middlewares=https-redirect"
+      # --- Traefik Dashboard Router (HTTPS) ---
       - "traefik.http.routers.dashboard.rule=Host(`traefik.prateekjain.dev`)"
       - "traefik.http.routers.dashboard.service=api@internal"
-      - "traefik.http.routers.dashboard.entrypoints=web"
+      - "traefik.http.routers.dashboard.entrypoints=websecure" # Use HTTPS entrypoint
+      - "traefik.http.routers.dashboard.tls=true" # Enable TLS
+      - "traefik.http.routers.dashboard.tls.certresolver=myresolver" # Specify Let's Encrypt resolver
+      # --- Traefik Metrics Router (HTTPS) ---
       - "traefik.http.routers.metrics.rule=Host(`traefik.prateekjain.dev`) && Path(`/metrics`)"
-      - "traefik.http.routers.metrics.service=api@internal"
-      - "traefik.http.routers.metrics.entrypoints=web"
+      - "traefik.http.routers.metrics.service=prometheus@internal" # Route to internal prometheus service
+      - "traefik.http.routers.metrics.entrypoints=websecure" # Use HTTPS entrypoint
+      - "traefik.http.routers.metrics.tls=true" # Enable TLS
+      - "traefik.http.routers.metrics.tls.certresolver=myresolver" # Specify Let's Encrypt resolver
 
   prometheus:
     image: prom/prometheus:latest
@@ -54,7 +79,7 @@ services:
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
     ports:
-      - "9090:9090"
+      - "9090:9090" # Still expose for direct access if needed
     networks:
       - monitoring-network
     deploy:
@@ -65,7 +90,10 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.prometheus.rule=Host(`prometheus.prateekjain.dev`)"
-      - "traefik.http.routers.prometheus.entrypoints=web"
+      - "traefik.http.routers.prometheus.entrypoints=websecure" # Use HTTPS entrypoint
+      - "traefik.http.routers.prometheus.tls=true" # Enable TLS
+      - "traefik.http.routers.prometheus.tls.certresolver=myresolver" # Specify Let's Encrypt resolver
+      - "traefik.http.services.prometheus.loadbalancer.server.port=9090" # Tell Traefik which port Prometheus uses
 
   app-frontend:
     image: nginx:alpine
@@ -81,7 +109,10 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.app-frontend.rule=Host(`app.prateekjain.dev`)"
-      - "traefik.http.routers.app-frontend.entrypoints=web"
+      - "traefik.http.routers.app-frontend.entrypoints=websecure" # Use HTTPS entrypoint
+      - "traefik.http.routers.app-frontend.tls=true" # Enable TLS
+      - "traefik.http.routers.app-frontend.tls.certresolver=myresolver" # Specify Let's Encrypt resolver
+      - "traefik.http.services.app-frontend.loadbalancer.server.port=80" # Nginx default port
 
   admin-frontend:
     image: nginx:alpine
@@ -97,7 +128,10 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.admin-frontend.rule=Host(`admin.prateekjain.dev`)"
-      - "traefik.http.routers.admin-frontend.entrypoints=web"
+      - "traefik.http.routers.admin-frontend.entrypoints=websecure" # Use HTTPS entrypoint
+      - "traefik.http.routers.admin-frontend.tls=true" # Enable TLS
+      - "traefik.http.routers.admin-frontend.tls.certresolver=myresolver" # Specify Let's Encrypt resolver
+      - "traefik.http.services.admin-frontend.loadbalancer.server.port=80" # Nginx default port
 
   backend1:
     build: ./backend1
@@ -117,7 +151,9 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend1.rule=Host(`api.prateekjain.dev`) && PathPrefix(`/backend1`)"
-      - "traefik.http.routers.backend1.entrypoints=web"
+      - "traefik.http.routers.backend1.entrypoints=websecure" # Use HTTPS entrypoint
+      - "traefik.http.routers.backend1.tls=true" # Enable TLS
+      - "traefik.http.routers.backend1.tls.certresolver=myresolver" # Specify Let's Encrypt resolver
       - "traefik.http.services.backend1.loadbalancer.server.port=3000"
       - "traefik.http.services.backend1.loadbalancer.sticky=true"
 
@@ -138,6 +174,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend2.rule=Host(`api.prateekjain.dev`) && PathPrefix(`/backend2`)"
-      - "traefik.http.routers.backend2.entrypoints=web"
+      - "traefik.http.routers.backend2.entrypoints=websecure" # Use HTTPS entrypoint
+      - "traefik.http.routers.backend2.tls=true" # Enable TLS
+      - "traefik.http.routers.backend2.tls.certresolver=myresolver" # Specify Let's Encrypt resolver
       - "traefik.http.services.backend2.loadbalancer.server.port=3000"
-      
+'''))

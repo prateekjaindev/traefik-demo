@@ -1,0 +1,8 @@
+{
+  "name": "backend1",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "prom-client": "^14.2.0"
+  }
+} 

@@ -1,0 +1,142 @@
+version: '3.8'
+
+networks:
+  app-network:
+    driver: bridge
+  monitoring-network:
+    driver: bridge
+
+volumes:
+  prometheus_data:
+    driver: local
+
+services:
+  traefik:
+    image: traefik:v3.3.5
+    command:
+      - "--api.insecure=${TRAEFIK_API_INSECURE:-false}"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--api.dashboard=true"
+      - "--metrics.prometheus=true"
+    ports:
+      - "80:80"
+      - "8080:8080"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - app-network
+      - monitoring-network
+    environment:
+      - TRAEFIK_API_INSECURE=false
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.local.com`)"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      - "traefik.http.routers.dashboard.entrypoints=web"
+      - "traefik.http.routers.metrics.rule=Host(`traefik.local.com`) && Path(`/metrics`)"
+      - "traefik.http.routers.metrics.service=api@internal"
+      - "traefik.http.routers.metrics.entrypoints=web"
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - prometheus_data:/prometheus
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - "9090:9090"
+    networks:
+      - monitoring-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.prometheus.rule=Host(`prometheus.local.com`)"
+      - "traefik.http.routers.prometheus.entrypoints=web"
+
+  app-frontend:
+    image: nginx:alpine
+    volumes:
+      - ./app-frontend:/usr/share/nginx/html
+    networks:
+      - app-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.app-frontend.rule=Host(`app.local.com`)"
+      - "traefik.http.routers.app-frontend.entrypoints=web"
+
+  admin-frontend:
+    image: nginx:alpine
+    volumes:
+      - ./admin-frontend:/usr/share/nginx/html
+    networks:
+      - app-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.admin-frontend.rule=Host(`admin.local.com`)"
+      - "traefik.http.routers.admin-frontend.entrypoints=web"
+
+  backend1:
+    build: ./backend1
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend1.rule=Host(`api.local.com`) && PathPrefix(`/backend1`)"
+      - "traefik.http.routers.backend1.entrypoints=web"
+      - "traefik.http.services.backend1.loadbalancer.server.port=3000"
+      - "traefik.http.services.backend1.loadbalancer.sticky=true"
+
+  backend2:
+    build: ./backend2
+    networks:
+      - app-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend2.rule=Host(`api.local.com`) && PathPrefix(`/backend2`)"
+      - "traefik.http.routers.backend2.entrypoints=web"
+      - "traefik.http.services.backend2.loadbalancer.server.port=3000"

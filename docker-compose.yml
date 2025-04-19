@@ -178,4 +178,3 @@ services:
       - "traefik.http.routers.backend2.tls=true" # Enable TLS
       - "traefik.http.routers.backend2.tls.certresolver=myresolver" # Specify Let's Encrypt resolver
       - "traefik.http.services.backend2.loadbalancer.server.port=3000"
-'''))

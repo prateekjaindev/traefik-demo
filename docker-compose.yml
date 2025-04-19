@@ -30,7 +30,7 @@ services:
       - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web" # Use HTTP challenge on port 80
       # Prometheus Metrics
       - "--metrics.prometheus=true"
-      - "--metrics.prometheus.entryPoint=metrics" # Expose metrics on a dedicated entrypoint if needed (optional)
+      # - "--metrics.prometheus.entryPoint=metrics" # Removed this line
     ports:
       - "80:80"   # HTTP
       - "443:443" # HTTPS

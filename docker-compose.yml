@@ -25,7 +25,7 @@ services:
       - "--log.level=INFO" # Optional: Set log level
       - "--accesslog=true" # Enable access logs
       # Let's Encrypt configuration
-      - "--certificatesresolvers.myresolver.acme.email=hello@prateekjain.dev"
+      - "--certificatesresolvers.myresolver.acme.email=hello@yourdomain.com"
       - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
       - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
       - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web" # Use HTTP challenge on port 80
@@ -58,13 +58,13 @@ services:
       - "traefik.http.routers.http-catchall.entrypoints=web"
       - "traefik.http.routers.http-catchall.middlewares=https-redirect"
       # --- Traefik Dashboard Router (HTTPS) ---
-      - "traefik.http.routers.dashboard.rule=Host(`traefik.prateekjain.dev`)"
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.yourdomain.com`)"
       - "traefik.http.routers.dashboard.service=api@internal"
       - "traefik.http.routers.dashboard.entrypoints=websecure" # Use HTTPS entrypoint
       - "traefik.http.routers.dashboard.tls=true" # Enable TLS
       - "traefik.http.routers.dashboard.tls.certresolver=myresolver" # Specify Let's Encrypt resolver
       # --- Traefik Metrics Router (HTTPS) ---
-      - "traefik.http.routers.metrics.rule=Host(`traefik.prateekjain.dev`) && Path(`/metrics`)"
+      - "traefik.http.routers.metrics.rule=Host(`traefik.yourdomain.com`) && Path(`/metrics`)"
       - "traefik.http.routers.metrics.service=prometheus@internal" # Route to internal prometheus service
       - "traefik.http.routers.metrics.entrypoints=websecure" # Use HTTPS entrypoint
       - "traefik.http.routers.metrics.tls=true" # Enable TLS
@@ -89,7 +89,7 @@ services:
           memory: 512M
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.prometheus.rule=Host(`prometheus.prateekjain.dev`)"
+      - "traefik.http.routers.prometheus.rule=Host(`prometheus.yourdomain.com`)"
       - "traefik.http.routers.prometheus.entrypoints=websecure" # Use HTTPS entrypoint
       - "traefik.http.routers.prometheus.tls=true" # Enable TLS
       - "traefik.http.routers.prometheus.tls.certresolver=myresolver" # Specify Let's Encrypt resolver
@@ -109,7 +109,7 @@ services:
           memory: 256M
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.app-frontend.rule=Host(`app.prateekjain.dev`)"
+      - "traefik.http.routers.app-frontend.rule=Host(`app.yourdomain.com`)"
       - "traefik.http.routers.app-frontend.entrypoints=websecure" # Use HTTPS entrypoint
       - "traefik.http.routers.app-frontend.tls=true" # Enable TLS
       - "traefik.http.routers.app-frontend.tls.certresolver=myresolver" # Specify Let's Encrypt resolver
@@ -129,7 +129,7 @@ services:
           memory: 256M
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.admin-frontend.rule=Host(`admin.prateekjain.dev`)"
+      - "traefik.http.routers.admin-frontend.rule=Host(`admin.yourdomain.com`)"
       - "traefik.http.routers.admin-frontend.entrypoints=websecure" # Use HTTPS entrypoint
       - "traefik.http.routers.admin-frontend.tls=true" # Enable TLS
       - "traefik.http.routers.admin-frontend.tls.certresolver=myresolver" # Specify Let's Encrypt resolver
@@ -147,7 +147,7 @@ services:
       - app-network
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.backend1.rule=Host(`api.prateekjain.dev`) && PathPrefix(`/backend1`)"
+      - "traefik.http.routers.backend1.rule=Host(`api.yourdomain.com`) && PathPrefix(`/backend1`)"
       - "traefik.http.routers.backend1.entrypoints=websecure" # Use HTTPS entrypoint
       - "traefik.http.routers.backend1.tls=true" # Enable TLS
       - "traefik.http.routers.backend1.tls.certresolver=myresolver" # Specify Let's Encrypt resolver
@@ -166,7 +166,7 @@ services:
           memory: 512M
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.backend2.rule=Host(`api.prateekjain.dev`) && PathPrefix(`/backend2`)"
+      - "traefik.http.routers.backend2.rule=Host(`api.yourdomain.com`) && PathPrefix(`/backend2`)"
       - "traefik.http.routers.backend2.entrypoints=websecure" # Use HTTPS entrypoint
       - "traefik.http.routers.backend2.tls=true" # Enable TLS
       - "traefik.http.routers.backend2.tls.certresolver=myresolver" # Specify Let's Encrypt resolver

@@ -1,5 +1,3 @@
-print(default_api.write_file(path="docker-compose.yml", content='''version: '3.8'
-
 networks:
   app-network:
     driver: bridge

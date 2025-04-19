@@ -2,20 +2,6 @@
 
 This is a simple demonstration of Traefik as a reverse proxy with multiple services.
 
-## Services
-
-- Frontend applications:
-  - app.yourdomain.com: Main application frontend
-  - admin.yourdomain.com: Admin panel frontend
-- Backend services:
-  - api.yourdomain.com/backend1: First backend service
-  - api.yourdomain.com/backend2: Second backend service
-- Traefik Dashboard:
-  - traefik.yourdomain.com: Traefik dashboard
-- Monitoring:
-  - prometheus.yourdomain.com: Prometheus dashboard
-  - traefik.yourdomain.com/metrics: Traefik metrics endpoint
-
 ## Prerequisites
 
 - Docker
@@ -38,14 +24,16 @@ docker-compose up -d
 ## Accessing the Services
 
 - Traefik Dashboard: https://traefik.yourdomain.com
-- App Frontend: https://app.yourdomain.com
-- Admin Frontend: https://admin.yourdomain.com
-- Backend 1: https://api.yourdomain.com/backend1
-- Backend 2: https://api.yourdomain.com/backend2
-- Prometheus: https://prometheus.yourdomain.com
+- Frontend:
+  - App Frontend: https://app.yourdomain.com
+  - Admin Frontend: https://admin.yourdomain.com
+- Backend:
+  - Backend 1: https://api.yourdomain.com/backend1
+  - Backend 2: https://api.yourdomain.com/backend2
 - Metrics Endpoints:
   - Traefik Metrics: https://traefik.yourdomain.com/metrics
-  
+  - Prometheus: https://prometheus.yourdomain.com
+
 ## Docker Compose Configuration
 
 The application utilizes Docker Compose for defining and managing multi-container Docker applications. Key aspects of the configuration include:

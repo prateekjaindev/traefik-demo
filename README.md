@@ -5,18 +5,18 @@ This is a simple demonstration of Traefik as a reverse proxy with multiple servi
 ## Services
 
 - Frontend applications:
-  - app.prateekjain.dev: Main application frontend
-  - admin.prateekjain.dev: Admin panel frontend
+  - app.yourdomain.com: Main application frontend
+  - admin.yourdomain.com: Admin panel frontend
 - Backend services:
-  - api.prateekjain.dev/backend1: First backend service
-  - api.prateekjain.dev/backend2: Second backend service
+  - api.yourdomain.com/backend1: First backend service
+  - api.yourdomain.com/backend2: Second backend service
 - Traefik Dashboard:
-  - traefik.prateekjain.dev: Traefik dashboard
+  - traefik.yourdomain.com: Traefik dashboard
 - Monitoring:
-  - prometheus.prateekjain.dev: Prometheus metrics dashboard
-  - traefik.prateekjain.dev/metrics: Traefik metrics endpoint
-  - api.prateekjain.dev/backend1/metrics: Backend1 metrics endpoint
-  - api.prateekjain.dev/backend2/metrics: Backend2 metrics endpoint
+  - prometheus.yourdomain.com: Prometheus metrics dashboard
+  - traefik.yourdomain.com/metrics: Traefik metrics endpoint
+  - api.yourdomain.com/backend1/metrics: Backend1 metrics endpoint
+  - api.yourdomain.com/backend2/metrics: Backend2 metrics endpoint
 
 ## Prerequisites
 
@@ -26,11 +26,11 @@ This is a simple demonstration of Traefik as a reverse proxy with multiple servi
 ## Setup
 
 1. **DNS Configuration:** Ensure you have the following DNS records pointing to your server's IP address:
-   - `app.prateekjain.dev`
-   - `admin.prateekjain.dev`
-   - `api.prateekjain.dev`
-   - `traefik.prateekjain.dev`
-   - `prometheus.prateekjain.dev`
+   - `app.yourdomain.com`
+   - `admin.yourdomain.com`
+   - `api.yourdomain.com`
+   - `traefik.yourdomain.com`
+   - `prometheus.yourdomain.com`
 
 2. Start the stack:
 ```bash
@@ -39,16 +39,38 @@ docker-compose up -d
 
 ## Accessing the Services
 
-- Traefik Dashboard: http://traefik.prateekjain.dev
-- App Frontend: http://app.prateekjain.dev
-- Admin Frontend: http://admin.prateekjain.dev
-- Backend 1: http://api.prateekjain.dev/backend1
-- Backend 2: http://api.prateekjain.dev/backend2
-- Prometheus: http://prometheus.prateekjain.dev
+- Traefik Dashboard: https://traefik.yourdomain.com
+- App Frontend: https://app.yourdomain.com
+- Admin Frontend: https://admin.yourdomain.com
+- Backend 1: https://api.yourdomain.com/backend1
+- Backend 2: https://api.yourdomain.com/backend2
+- Prometheus: https://prometheus.yourdomain.com
 - Metrics Endpoints:
-  - Traefik Metrics: http://traefik.prateekjain.dev/metrics
-  - Backend1 Metrics: http://api.prateekjain.dev/backend1/metrics
-  - Backend2 Metrics: http://api.prateekjain.dev/backend2/metrics
+  - Traefik Metrics: https://traefik.yourdomain.com/metrics
+  - Backend1 Metrics: https://api.yourdomain.com/backend1/metrics
+  - Backend2 Metrics: https://api.yourdomain.com/backend2/metrics
+
+## Docker Compose Configuration
+
+The application utilizes Docker Compose for defining and managing multi-container Docker applications. Key aspects of the configuration include:
+
+### Networks
+
+The following networks are defined:
+
+- `app-network`: A bridge network for the application's services.
+- `monitoring-network`: A bridge network for monitoring-related services.
+
+These networks enable communication between the services. `app-network` connects all the services and `monitoring-network` is used to connect traefik and prometheus.
+
+### Volumes
+
+The following volumes are defined:
+
+- `prometheus_data`: A local volume to store Prometheus data.
+- `letsencrypt`: A local volume to store Let's Encrypt certificates for secure communication.
+
+These volumes persist data across container restarts.
 
 ## Stopping the Stack
 
